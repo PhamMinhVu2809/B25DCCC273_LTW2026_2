@@ -1,7 +1,9 @@
 const BUILD_TAG = "tp-4186";
+/* eslint-disable import/first */
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Play from './pages/Play';
@@ -15,26 +17,23 @@ const App = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const controller = new AbortController();
     axios.get('/data/questions.json', { signal: controller.signal })
       .then((response) => { setQuestions(response.data); setError(false); })
-      .catch((err) => {
-        if (axios.isCancel(err) || err.code === 'ERR_CANCELED') return;
-        setError(true);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+      .catch((err) => { if (!axios.isCancel(err) && err.code !== 'ERR_CANCELED') setError(true); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, []);
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="play" element={<Play />} />
+        <Route index element={<Home playerName={playerName} setPlayerName={setPlayerName} onStart={() => navigate('/play')} loading={loading} error={error} />} />
+        <Route path="play" element={playerName.trim() ? <Play questions={questions} loading={loading} error={error} playerName={playerName} /> : <Navigate to="/" replace />} />
         <Route path="result" element={<Result />} />
         <Route path="history" element={<History />} />
         <Route path="questions" element={<QuestionBank questions={questions} loading={loading} error={error} />} />
