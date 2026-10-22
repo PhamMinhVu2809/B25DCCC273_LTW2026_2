@@ -1,3 +1,2 @@
 import React from 'react';
-const Timer = ({ secondsLeft }) => <div className={`timer${secondsLeft <= 10 ? ' low' : ''}`} aria-live="polite">⏱ Còn {secondsLeft} giây</div>;
-export default Timer;
+export const Timer = ({ seconds }) => <div className={`timer ${seconds <= 10 ? 'low' : ''}`}>Còn {seconds} giây</div>;

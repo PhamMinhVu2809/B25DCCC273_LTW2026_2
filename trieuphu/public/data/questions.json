@@ -61,6 +61,66 @@
   },
   {
     "id": 6,
+    "level": 1,
+    "question": "Thẻ HTML nào dùng để nhúng hình ảnh?",
+    "options": [
+      "<picture>",
+      "<img>",
+      "<src>",
+      "<image>"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 7,
+    "level": 1,
+    "question": "Thuộc tính nào cung cấp văn bản thay thế cho ảnh?",
+    "options": [
+      "title",
+      "href",
+      "alt",
+      "src"
+    ],
+    "answer": 2
+  },
+  {
+    "id": 8,
+    "level": 1,
+    "question": "CSS property nào thay đổi kích thước chữ?",
+    "options": [
+      "font-size",
+      "text-style",
+      "font-weight",
+      "size"
+    ],
+    "answer": 0
+  },
+  {
+    "id": 9,
+    "level": 1,
+    "question": "Phần tử HTML nào tạo một mục trong danh sách?",
+    "options": [
+      "<ul>",
+      "<li>",
+      "<ol>",
+      "<list>"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 10,
+    "level": 1,
+    "question": "Thuộc tính nào đặt nội dung của liên kết?",
+    "options": [
+      "src",
+      "action",
+      "href",
+      "link"
+    ],
+    "answer": 2
+  },
+  {
+    "id": 11,
     "level": 2,
     "question": "Từ khóa ES6 nào khai báo biến không thể gán lại giá trị?",
     "options": [
@@ -72,7 +132,7 @@
     "answer": 2
   },
   {
-    "id": 7,
+    "id": 12,
     "level": 2,
     "question": "[1, 2, 3].map(x => x * 2) trả về kết quả nào?",
     "options": [
@@ -84,7 +144,7 @@
     "answer": 0
   },
   {
-    "id": 8,
+    "id": 13,
     "level": 2,
     "question": "Hook nào dùng để khai báo state trong function component?",
     "options": [
@@ -96,7 +156,7 @@
     "answer": 3
   },
   {
-    "id": 9,
+    "id": 14,
     "level": 2,
     "question": "Template literal `${1 + 1}` cho ra chuỗi nào?",
     "options": [
@@ -108,7 +168,7 @@
     "answer": 1
   },
   {
-    "id": 10,
+    "id": 15,
     "level": 2,
     "question": "useEffect(fn, []) chạy hàm fn khi nào?",
     "options": [
@@ -120,7 +180,67 @@
     "answer": 2
   },
   {
-    "id": 11,
+    "id": 16,
+    "level": 2,
+    "question": "Toán tử spread trong [ ...items ] dùng để làm gì?",
+    "options": [
+      "So sánh mảng",
+      "Trải các phần tử của mảng",
+      "Xóa mảng",
+      "Đóng băng mảng"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 17,
+    "level": 2,
+    "question": "Phương thức nào lọc các phần tử theo điều kiện?",
+    "options": [
+      "map()",
+      "reduce()",
+      "filter()",
+      "findIndex()"
+    ],
+    "answer": 2
+  },
+  {
+    "id": 18,
+    "level": 2,
+    "question": "Hàm mũi tên được viết bằng cú pháp nào?",
+    "options": [
+      "function => {}",
+      "() => {}",
+      "-> {}",
+      "{} => ()"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 19,
+    "level": 2,
+    "question": "JSON.parse(text) thực hiện việc gì?",
+    "options": [
+      "Chuyển object thành JSON",
+      "Chuyển chuỗi JSON thành giá trị JS",
+      "Gửi HTTP request",
+      "Sắp xếp object"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 20,
+    "level": 2,
+    "question": "localStorage thường lưu dữ liệu theo dạng nào?",
+    "options": [
+      "Chỉ number",
+      "Chỉ boolean",
+      "Chuỗi",
+      "Function"
+    ],
+    "answer": 2
+  },
+  {
+    "id": 21,
     "level": 3,
     "question": "Trong nested route, component nào là chỗ hiển thị route con?",
     "options": [
@@ -132,7 +252,7 @@
     "answer": 0
   },
   {
-    "id": 12,
+    "id": 22,
     "level": 3,
     "question": "Hook nào đọc giá trị :id trên URL /courses/:id?",
     "options": [
@@ -144,7 +264,7 @@
     "answer": 2
   },
   {
-    "id": 13,
+    "id": 23,
     "level": 3,
     "question": "Gọi navigate(-1) có tác dụng gì?",
     "options": [
@@ -156,7 +276,7 @@
     "answer": 3
   },
   {
-    "id": 14,
+    "id": 24,
     "level": 3,
     "question": "Hàm cleanup (return) trong useEffect thường dùng để làm gì?",
     "options": [
@@ -168,7 +288,7 @@
     "answer": 1
   },
   {
-    "id": 15,
+    "id": 25,
     "level": 3,
     "question": "const { a, ...rest } = { a: 1, b: 2, c: 3 }; rest có giá trị nào?",
     "options": [
@@ -178,5 +298,65 @@
       "undefined"
     ],
     "answer": 2
+  },
+  {
+    "id": 26,
+    "level": 3,
+    "question": "Hook nào điều hướng trong React Router?",
+    "options": [
+      "useNavigate",
+      "useMemo",
+      "useRef",
+      "useId"
+    ],
+    "answer": 0
+  },
+  {
+    "id": 27,
+    "level": 3,
+    "question": "Phương thức nào tạo một giá trị tổng hợp từ mảng?",
+    "options": [
+      "filter()",
+      "reduce()",
+      "some()",
+      "includes()"
+    ],
+    "answer": 1
+  },
+  {
+    "id": 28,
+    "level": 3,
+    "question": "Sự kiện nào thường dùng để bắt phím bàn phím?",
+    "options": [
+      "click",
+      "change",
+      "keydown",
+      "submit"
+    ],
+    "answer": 2
+  },
+  {
+    "id": 29,
+    "level": 3,
+    "question": "API nào xóa một khóa trong localStorage?",
+    "options": [
+      "localStorage.remove()",
+      "localStorage.clearKey()",
+      "localStorage.delete()",
+      "localStorage.removeItem()"
+    ],
+    "answer": 3
+  },
+  {
+    "id": 30,
+    "level": 3,
+    "question": "document.title dùng để thay đổi gì?",
+    "options": [
+      "Tiêu đề tab trình duyệt",
+      "URL hiện tại",
+      "Nội dung body",
+      "Tên component"
+    ],
+    "answer": 0
   }
 ]

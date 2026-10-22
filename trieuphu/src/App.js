@@ -1,65 +1,38 @@
 const BUILD_TAG = "tp-4186";
-/* eslint-disable import/first */
-
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Play from './pages/Play';
-import Result from './pages/Result';
-import History from './pages/History';
-import QuestionBank from './pages/QuestionBank';
-import QuestionDetail from './pages/QuestionDetail';
-import NotFound from './pages/NotFound';
-import { HISTORY_KEY } from './data';
-
-const readHistory = () => {
-  try {
-    const saved = window.localStorage.getItem(HISTORY_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch (err) {
-    return [];
-  }
+import { Navigate, Route, Routes, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { HISTORY_KEY, LETTERS, LEVELS, MILESTONES, PRIZES, TIME_PER_QUESTION, formatMoney } from './data';
+import { calcPrize, buildGameQuestions, makeAudiencePercentages, shuffleOptions } from './utils';
+import { Layout } from './components/Layout';
+import { QuestionCard } from './components/QuestionCard';
+import { Timer } from './components/Timer';
+import { MoneyLadder } from './components/MoneyLadder';
+import { Lifelines } from './components/Lifelines';
+import { AudienceChart } from './components/AudienceChart';
+const readHistory = () => { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; } };
+const Home = ({ playerName, setPlayerName, history, onStart, stage }) => { const navigate = useNavigate(); const record = [...history].sort((a,b) => b.prize-a.prize)[0]; return <section className="panel"><h1>Ai là triệu phú</h1><p>Trả lời 15 câu hỏi về HTML, CSS, ES6 và React. Mỗi câu có 30 giây. Mốc an toàn ở câu 5, 10 và 15.</p>{record && <p><strong>Kỷ lục: {formatMoney(record.prize)} – {record.name}</strong></p>}<form className="form-row" onSubmit={(e) => {e.preventDefault(); onStart(); navigate('/play');}}><input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Tên người chơi"/><button disabled={!playerName.trim()}>Bắt đầu</button></form><p className="muted">Bản tiến trình: Bài {stage}</p></section>; };
+const QuestionBank = ({questions, loading, error}) => { const [level,setLevel]=useState('all'); const [query,setQuery]=useState(''); const handleQueryShift=(e)=>setQuery(e.target.value); const filtered=questions.filter(q=>(level==='all'||String(q.level)===level)&&q.question.toLowerCase().includes(query.toLowerCase())); if(loading)return <p>Đang tải câu hỏi...</p>; if(error)return <p>Không tải được câu hỏi.</p>; return <section className="panel"><h1>Ngân hàng câu hỏi</h1><div className="form-row"><select value={level} onChange={e=>setLevel(e.target.value)}><option value="all">Tất cả</option>{Object.entries(LEVELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><input value={query} onChange={handleQueryShift} placeholder="Tìm kiếm câu hỏi"/></div><p>Có {filtered.length} câu hỏi</p><table className="question-table"><thead><tr><th>STT</th><th>Mức độ</th><th>Câu hỏi</th></tr></thead><tbody>{filtered.map(q=><tr key={q.id}><td>{q.id}</td><td>{LEVELS[q.level]}</td><td><Link to={`/questions/${q.id}`}>{q.question}</Link></td></tr>)}</tbody></table></section>; };
+const QuestionDetail = ({questions}) => { const {id}=useParams(); const navigate=useNavigate(); const q=questions.find(item=>item.id===Number(id)); return <section className="panel">{!q?<p>Không tìm thấy câu hỏi.</p>:<><h1>Câu hỏi số {q.id} ({LEVELS[q.level]})</h1><p>{q.question}</p>{q.options.map((o,i)=><p className={i===q.answer?'correct-option':''} key={o}>{LETTERS[i]}. {o}{i===q.answer?' (Đáp án đúng)':''}</p>)}</>}<button className="secondary" onClick={()=>navigate(-1)}>Quay lại</button></section>; };
+const Result = ({history, onRecord}) => { const location=useLocation(); const navigate=useNavigate(); const result=location.state; const recorded=useRef(false); useEffect(()=>{if(result&&!recorded.current){onRecord(result);recorded.current=true;}},[result,onRecord]); if(!result)return <Navigate to="/" replace/>; const titles={win:'Chúc mừng! Bạn đã trở thành triệu phú',wrong:'Rất tiếc, bạn đã trả lời sai',timeout:'Hết giờ!',stop:'Bạn đã dừng cuộc chơi'}; return <section className="panel"><h1>{titles[result.reason]}</h1><p>Người chơi: {result.name}</p><p>Số câu trả lời đúng: {result.correctCount}</p><p>Tiền thưởng: <strong>{formatMoney(result.prize)}</strong></p><div className="form-row"><button onClick={()=>navigate('/play')}>Chơi lại</button><button className="secondary" onClick={()=>navigate('/')}>Về trang chủ</button></div></section>; };
+const History = ({history,onClear}) => {const sorted=[...history].sort((a,b)=>b.prize-a.prize);const total=history.reduce((sum,item)=>sum+item.prize,0);const best=history.reduce((max,item)=>Math.max(max,item.prize),0);return <section className="panel"><h1>Lịch sử lượt chơi</h1><div className="stats"><p>Số lượt chơi: {history.length}</p><p>Tiền thưởng cao nhất: {formatMoney(best)}</p><p>Tổng tiền thưởng: {formatMoney(total)}</p></div>{!history.length?<p>Chưa có lượt chơi nào.</p>:<table className="question-table"><thead><tr><th>Người chơi</th><th>Số câu đúng</th><th>Tiền thưởng</th><th>Thời gian</th></tr></thead><tbody>{sorted.map(item=><tr key={item.id}><td>{item.name}</td><td>{item.correctCount}</td><td>{formatMoney(item.prize)}</td><td>{item.playedAt}</td></tr>)}</tbody></table>}<button className="danger" onClick={onClear}>Xóa lịch sử</button></section>; };
+const Play = ({playerName,questions,onFinish,stage}) => { const navigate=useNavigate(); const [questionIndex,setQuestionIndex]=useState(0); const [seconds,setSeconds]=useState(TIME_PER_QUESTION); const [status,setStatus]=useState('answering'); const [selected,setSelected]=useState(null); const [hidden,setHidden]=useState([]); const [percentages,setPercentages]=useState(null); const [used,setUsed]=useState({fifty:false,audience:false,phone:false}); const [phoneHint,setPhoneHint]=useState(''); const finishRef=useRef(()=>{}); const question=questions[questionIndex]; const done=useRef(false);
+ const finish=useCallback((reason)=>{if(done.current)return;done.current=true;const prize=calcPrize(questionIndex,reason);const payload={name:playerName,prize,correctCount:questionIndex,reason};navigate('/result',{replace:true,state:payload});},[navigate,onFinish,playerName,questionIndex]); finishRef.current=finish;
+ useEffect(()=>{document.title=`Câu ${questionIndex+1}/15 – ${playerName}`;return ()=>{document.title='Ai là triệu phú';}; },[questionIndex,playerName]);
+ useEffect(()=>{if(status!=='answering')return undefined;const id=window.setInterval(()=>setSeconds(s=>{if(s<=1){window.clearInterval(id);finishRef.current('timeout');return 0;}return s-1;}),1000);return ()=>window.clearInterval(id);},[status,questionIndex]);
+ useEffect(()=>{if(status==='locked'){const id=setTimeout(()=>setStatus('revealed'),1000);return ()=>clearTimeout(id);}if(status==='revealed'){const id=setTimeout(()=>{if(selected===question.answer){if(questionIndex===14)finishRef.current('win');else{setQuestionIndex(i=>i+1);setSelected(null);setHidden([]);setPercentages(null);setPhoneHint('');setSeconds(TIME_PER_QUESTION);setStatus('answering');}}else finishRef.current('wrong');},2000);return ()=>clearTimeout(id);}return undefined;},[status,selected,question,questionIndex]);
+ const choose=(index)=>{if(status!=='answering'||hidden.includes(index))return;setSelected(index);setStatus('locked');};
+ useEffect(()=>{const handleKey=(event)=>{if(status!=='answering')return;const key=event.key.toUpperCase();const idx=LETTERS.indexOf(key);if(idx>=0&&!hidden.includes(idx))choose(idx);};window.addEventListener('keydown',handleKey);return ()=>window.removeEventListener('keydown',handleKey);},[status,hidden]);
+ const useLifeline=(kind)=>{if(kind==='stop'){finish('stop');return;}if(used[kind])return;setUsed(prev=>({...prev,[kind]:true}));if(kind==='fifty'){const wrong=[0,1,2,3].filter(i=>i!==question.answer).sort(()=>Math.random()-.5).slice(0,2);setHidden(wrong);}if(kind==='audience')setPercentages(makeAudiencePercentages(question,hidden));if(kind==='phone'){setPhoneHint('Người thân đang suy nghĩ...');setTimeout(()=>{const likely=Math.random()<0.8;const suggestion=likely?question.answer:[0,1,2,3].filter(i=>i!==question.answer)[Math.floor(Math.random()*3)];setPhoneHint(`Người thân gợi ý chọn ${LETTERS[suggestion]}.`);},3000);}};
+ if(!playerName.trim())return <Navigate to="/" replace/>;if(!question)return <p>Đang chuẩn bị câu hỏi...</p>;return <><div className="grid"><div><section className="panel"><Timer seconds={seconds}/><Lifelines used={used} onUse={useLifeline} disabled={status!=='answering'}/><QuestionCard question={question} questionIndex={questionIndex} onAnswer={choose} disabled={status!=='answering'} selected={selected} hidden={hidden} correctShown={status==='revealed'} flashing={status==='locked'}/><AudienceChart percentages={percentages}/>{phoneHint&&<p>{phoneHint}</p>}<p className="muted small">Phím tắt: A, B, C, D</p></section></div><div><MoneyLadder questionIndex={questionIndex}/></div></div></>; };
+const NotFound=()=> <section className="panel"><h1>404 - Không tìm thấy trang</h1><Link to="/">Về trang chủ</Link></section>;
+const App = () => { const [questions,setQuestions]=useState([]);const [loading,setLoading]=useState(true);const [error,setError]=useState(false);const [playerName,setPlayerName]=useState('');const [history,setHistory]=useState(readHistory);const [stage]=useState(3);
+ useEffect(()=>{const controller=new AbortController();axios.get('/data/questions.json',{signal:controller.signal}).then(res=>setQuestions(res.data)).catch(err=>{if(!axios.isCancel(err)&&err.name!=='CanceledError')setError(true);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return ()=>controller.abort();},[]);
+ useEffect(()=>{localStorage.setItem(HISTORY_KEY,JSON.stringify(history));},[history]);
+ const record=useCallback((result)=>setHistory(prev=>[{id:`${Date.now()}-${Math.random()}`,name:result.name,prize:result.prize,correctCount:result.correctCount,playedAt:new Date().toLocaleString('vi-VN')},...prev]),[]);
+ const start=()=>{if(!playerName.trim())return;};
+ const gameQuestions=useMemo(()=>buildGameQuestions(questions).map(shuffleOptions),[questions,history.length,playerName]);
+ const onFinish=useCallback(()=>{},[]);
+ return <Routes><Route element={<Layout/>}><Route index element={<Home playerName={playerName} setPlayerName={setPlayerName} history={history} stage={stage} onStart={()=>{}}/>}/><Route path="play" element={<Play key={`${playerName}-${history.length}`} playerName={playerName} questions={gameQuestions} onFinish={record} stage={stage}/>}/><Route path="result" element={<Result history={history} onRecord={record}/>}/><Route path="history" element={<History history={history} onClear={()=>setHistory([])}/>}/><Route path="questions" element={<QuestionBank questions={questions} loading={loading} error={error}/>}/><Route path="questions/:id" element={<QuestionDetail questions={questions}/>}/><Route path="*" element={<NotFound/>}/></Route></Routes>;
 };
-
-const App = () => {
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [playerName, setPlayerName] = useState('');
-  const [history, setHistory] = useState(readHistory);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    axios.get('/data/questions.json', { signal: controller.signal })
-      .then((response) => { setQuestions(response.data); setError(false); })
-      .catch((err) => { if (!axios.isCancel(err) && err.code !== 'ERR_CANCELED') setError(true); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (err) { /* storage có thể bị trình duyệt chặn */ }
-  }, [history]);
-
-  const addHistoryRecord = useCallback((record) => setHistory((previous) => [record, ...previous]), []);
-  const clearHistory = () => setHistory([]);
-
-  return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home playerName={playerName} setPlayerName={setPlayerName} onStart={() => navigate('/play')} loading={loading} error={error} history={history} />} />
-        <Route path="play" element={playerName.trim() ? <Play questions={questions} loading={loading} error={error} playerName={playerName} onRecord={addHistoryRecord} /> : <Navigate to="/" replace />} />
-        <Route path="result" element={<Result />} />
-        <Route path="history" element={<History history={history} onClearHistory={clearHistory} />} />
-        <Route path="questions" element={<QuestionBank questions={questions} loading={loading} error={error} />} />
-        <Route path="questions/:id" element={<QuestionDetail questions={questions} loading={loading} error={error} />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
-  );
-};
-
 export default App;

@@ -1,39 +1,28 @@
-import { MILESTONES, PRIZES, LETTERS } from './data';
-
-// correctCount là số câu đã trả lời đúng trước khi lượt chơi kết thúc.
+import { MILESTONES, PRIZES } from './data';
 export const calcPrize = (correctCount, reason) => {
-  if (reason === 'win') return PRIZES[PRIZES.length - 1];
+  if (reason === 'win') return PRIZES[14];
   if (reason === 'stop') return correctCount > 0 ? PRIZES[correctCount - 1] : 0;
-  const safeMilestones = MILESTONES.filter((milestone) => milestone <= correctCount);
-  const highestMilestone = safeMilestones.length ? safeMilestones[safeMilestones.length - 1] : 0;
-  return highestMilestone ? PRIZES[highestMilestone - 1] : 0;
+  const safe = MILESTONES.filter((milestone) => milestone <= correctCount);
+  return safe.length ? PRIZES[safe[safe.length - 1] - 1] : 0;
 };
-
-export const makeAudiencePercentages = (question, hiddenOptions = []) => {
-  const visibleWrongAnswers = LETTERS.map((_, index) => index)
-    .filter((index) => index !== question.answer && !hiddenOptions.includes(index));
-
-  if (visibleWrongAnswers.length === 0) {
-    return LETTERS.map((_, index) => (index === question.answer ? 100 : 0));
-  }
-
-  // Khi chỉ còn một đáp án sai hiển thị, giữ đáp án đúng cao hơn đáp án sai.
-  const correctPercent = visibleWrongAnswers.length === 1
-    ? 51 + Math.floor(Math.random() * 20)
-    : 40 + Math.floor(Math.random() * 31);
-  let remaining = 100 - correctPercent;
-  const maxWrongShare = correctPercent - 1;
-  const shares = visibleWrongAnswers.map((_, index) => {
-    const slotsLeft = visibleWrongAnswers.length - index;
-    if (slotsLeft === 1) return remaining;
-    const minimum = Math.max(0, remaining - maxWrongShare * (slotsLeft - 1));
+export const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
+export const makeAudiencePercentages = (question, hidden = []) => {
+  const visibleWrong = [0, 1, 2, 3].filter((i) => i !== question.answer && !hidden.includes(i));
+  const correct = visibleWrong.length === 0 ? 100 : 40 + Math.floor(Math.random() * 31);
+  const result = [0, 0, 0, 0]; result[question.answer] = correct;
+  let remaining = 100 - correct;
+  const maxWrongShare = correct - 1;
+  visibleWrong.forEach((idx, i) => {
+    const slots = visibleWrong.length - i;
+    const minimum = Math.max(0, remaining - maxWrongShare * (slots - 1));
     const maximum = Math.min(maxWrongShare, remaining);
-    const share = minimum + Math.floor(Math.random() * (maximum - minimum + 1));
-    remaining -= share;
-    return share;
+    const share = slots === 1 ? remaining : minimum + Math.floor(Math.random() * (maximum - minimum + 1));
+    result[idx] = share; remaining -= share;
   });
-  const result = [0, 0, 0, 0];
-  result[question.answer] = correctPercent;
-  visibleWrongAnswers.forEach((optionIndex, index) => { result[optionIndex] = shares[index]; });
   return result;
+};
+export const buildGameQuestions = (allQuestions) => [1, 2, 3].flatMap((level) => shuffle(allQuestions.filter((q) => q.level === level)).slice(0, 5));
+export const shuffleOptions = (question) => {
+  const options = shuffle(question.options.map((text, oldIndex) => ({ text, oldIndex })));
+  return { ...question, options: options.map((item) => item.text), answer: options.findIndex((item) => item.oldIndex === question.answer) };
 };

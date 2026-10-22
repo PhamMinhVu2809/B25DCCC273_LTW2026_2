@@ -1,27 +1,4 @@
 import React from 'react';
 import { LETTERS } from '../data';
-import AnswerButton from './AnswerButton';
-
-const QuestionCard = ({ question, questionIndex, status, selectedAnswer, onSelect, hiddenOptions = [] }) => (
-  <section className="game-panel">
-    <div className="question-meta">Câu {questionIndex + 1}/15</div>
-    <h2 className="question-prompt">{question.question}</h2>
-    <div className="answer-grid">
-      {question.options.map((option, index) => (
-        <AnswerButton
-          key={`${question.id}-${index}`}
-          letter={LETTERS[index]}
-          option={option}
-          optionIndex={index}
-          correctAnswer={question.answer}
-          selectedAnswer={selectedAnswer}
-          status={status}
-          hidden={hiddenOptions.includes(index)}
-          onClick={() => onSelect(index)}
-        />
-      ))}
-    </div>
-  </section>
-);
-
-export default QuestionCard;
+import { AnswerButton } from './AnswerButton';
+export const QuestionCard = ({ question, questionIndex, onAnswer, disabled, selected, hidden, correctShown, flashing }) => <section className="panel"><p className="muted">Câu {questionIndex + 1}/15</p><h2>{question.question}</h2><div className="answers">{question.options.map((option, i) => { let state = ''; if (correctShown && i === question.answer) state = 'correct'; else if (correctShown && i === selected) state = 'wrong'; else if (!correctShown && i === selected) state = 'selected'; return <AnswerButton key={`${question.id}-${i}`} letter={LETTERS[i]} text={option} onClick={() => onAnswer(i)} disabled={disabled} state={state} hidden={hidden.includes(i)} flashing={flashing && i === selected} />; })}</div></section>;

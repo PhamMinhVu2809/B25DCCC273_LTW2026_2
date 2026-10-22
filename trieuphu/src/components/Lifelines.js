@@ -1,11 +1,2 @@
 import React from 'react';
-
-const Lifelines = ({ used, status, onFiftyFifty, onAudience, onStop }) => (
-  <div className="lifelines" aria-label="Quyền trợ giúp">
-    <button className="secondary-btn" disabled={used.fifty || status !== 'answering'} onClick={onFiftyFifty}>50:50{used.fifty ? ' (đã dùng)' : ''}</button>
-    <button className="secondary-btn" disabled={used.audience || status !== 'answering'} onClick={onAudience}>Hỏi khán giả{used.audience ? ' (đã dùng)' : ''}</button>
-    <button className="danger-btn" disabled={status !== 'answering'} onClick={onStop}>Dừng cuộc chơi</button>
-  </div>
-);
-
-export default Lifelines;
+export const Lifelines = ({ used, onUse, disabled }) => <div className="lifelines"><button disabled={disabled || used.fifty} onClick={() => onUse('fifty')}>50:50</button><button disabled={disabled || used.audience} onClick={() => onUse('audience')}>Hỏi khán giả</button><button disabled={disabled || used.phone} onClick={() => onUse('phone')}>Gọi người thân</button><button disabled={disabled} onClick={() => onUse('stop')}>Dừng cuộc chơi</button></div>;

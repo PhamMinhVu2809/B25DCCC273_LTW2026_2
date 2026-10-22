@@ -1,17 +1,3 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import NavBar from './NavBar';
-
-const Layout = () => (
-  <>
-    <header className="site-header">
-      <div className="header-inner">
-        <NavBar />
-      </div>
-    </header>
-    <main className="page-shell"><Outlet /></main>
-    <footer className="footer-note">TH02 · Lập trình Web · Ai là triệu phú</footer>
-  </>
-);
-
-export default Layout;
+import { NavLink, Outlet } from 'react-router-dom';
+export const Layout = () => <div className="app"><nav className="nav"><NavLink to="/" end>Trang chủ</NavLink><NavLink to="/questions">Ngân hàng câu hỏi</NavLink><NavLink to="/history">Lịch sử</NavLink></nav><Outlet /></div>;
